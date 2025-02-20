@@ -1,8 +1,8 @@
 module UnivariateApprox
-using MuladdMacro, LinearAlgebra
+using MuladdMacro, LinearAlgebra, Serialization, FFTW
 
 # Quadrature rules
-include("gausslaguerre_lobatto.jl")
+include("univariate_quadrature.jl")
 
 # Basis functions
 include("univariate_basis.jl")

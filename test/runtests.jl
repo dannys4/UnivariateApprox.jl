@@ -6,7 +6,7 @@ Monomials() = MonicOrthogonalPolynomial(Returns(0.),Returns(0.))
 
 @testset "UnivariateApprox.jl" begin
     # Test quadrature rules
-    include("gausslaguerre_lobatto.jl")
+    include("univariate_quadrature.jl")
 
     # Test basis functions
     include("univariate_basis.jl")
