@@ -5,7 +5,7 @@ for n in 1:18
         monomial_int = evals'wts
         exact_int = factorial(big(degree))
         rtol = degree < 13 && n < 13 ? 1e-12 : 1e-8
-        if !approx(monomial_int, exact_int, rtol=rtol)
+        if !isapprox(monomial_int, exact_int, rtol=rtol)
             @info "" degree n abs(monomial_int - exact_int)/abs(exact_int)
         end
         @test monomial_int ≈ exact_int rtol=rtol
