@@ -44,7 +44,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          gcov_ignore: "src/leja.jl"
           slug: dannys4/UnivariateApprox.jl
   docs:
     name: Documentation
