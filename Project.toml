@@ -1,0 +1,13 @@
+name = "UnivariateApprox"
+uuid = "549aa1d2-f639-4cc7-b8e4-a7f233081321"
+authors = ["Daniel Sharp <dannys4@mit.edu> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
