@@ -31,13 +31,18 @@ end
 # Mollification m(x) = exp(-x^2/4)/sqrt(4pi)
 struct SquaredExponential <: Mollifier end
 
-Evaluate(::SquaredExponential, x) = exp(-x^2 / 4) / sqrt(4pi)
-function EvalDiff(::SquaredExponential, x)
-    (exp(-x^2 / 4) / sqrt(4pi), (-x / 2) * exp(-x^2 / 4) / sqrt(4pi))
+SQRT_4PI = sqrt(4pi)
+
+@inline function Evaluate(::SquaredExponential, x::U)::U where {U}
+    exp(-x^2 / 4) / U(SQRT_4PI)
 end
-function EvalDiff2(::SquaredExponential, x)
-    (exp(-x^2 / 4) / sqrt(4pi), (-x / 2) * exp(-x^2 / 4) / sqrt(4pi),
-        (x^2 / 2 - 1) * exp(-x^2 / 4) / sqrt(16pi))
+
+function EvalDiff(::SquaredExponential, x::U)::Tuple{U, U} where {U}
+    exp(-x^2 / 4) / U(SQRT_4PI), (-x / 2) * exp(-x^2 / 4) / U(SQRT_4PI)
+end
+function EvalDiff2(::SquaredExponential, x::U)::Tuple{U, U, U} where {U}
+    exp(-x^2 / 4) / U(SQRT_4PI), (-x / 2) * exp(-x^2 / 4) / U(SQRT_4PI),
+        (x^2 / 2 - 1) * exp(-x^2 / 4) / U(2SQRT_4PI)
 end
 
 # Mollification m(x) ≈ exp(-x^2/2) for some scaling with m(x) = 0 for |x| > B that's twice continuously differentiable
@@ -48,37 +53,37 @@ struct GaspariCohn{S <: Real} <: Mollifier
     end
 end
 
-@inline function _gaspari_cohn_small(ra)
-    @muladd (((-0.25 * ra + 0.5) * ra + 0.625) * ra + (-5.0 / 3.0)) * ra * ra + 1.0
+@inline function _gaspari_cohn_small(ra::U)::U where {U}
+    @muladd (((U(-0.25) * ra + U(0.5)) * ra + U(0.625)) * ra + U(-5.0 / 3.0)) * ra * ra + U(1.0)
     # - 0.25(ra^4) + 0.5(ra^3) + 0.625(ra^2) - (5/3)ra^2 + 1
 end
 
-@inline function _gaspari_cohn_diff_small(ra)
-    @muladd (((-1.25 * ra + 2.0) * ra + 1.875) * ra + (-10.0 / 3.0)) * ra
+@inline function _gaspari_cohn_diff_small(ra::U)::U where {U}
+    @muladd (((U(-1.25) * ra + U(2.0)) * ra + U(1.875)) * ra + U(-10.0 / 3.0)) * ra
     # - 1.25(ra^4) + 2(ra^3) + 1.875(ra^2) - (10/3)ra
 end
 
-@inline function _gaspari_cohn_diff2_small(ra)
-    @muladd (((-5.0 * ra + 6.0) * ra + 3.75) * ra + (-10.0 / 3.0))
+@inline function _gaspari_cohn_diff2_small(ra::U)::U where {U}
+    @muladd (((U(-5.0) * ra + U(6.0)) * ra + U(3.75)) * ra + U(-10.0 / 3.0))
     # - 5(ra^3) + 6(ra^2) + 3.75ra -10/3
 end
 
-@inline function _gaspari_cohn_large(ra)
-    @muladd (((((1.0 / 12.0) * ra + (-0.5)) * ra + 0.625) * ra + (5.0 / 3.0)) * ra + (-5.0)) * ra + 4 + (-2.0 / 3.0) / ra
+@inline function _gaspari_cohn_large(ra::U)::U where {U}
+    @muladd ((((U(1.0 / 12.0) * ra + U(-0.5)) * ra + U(0.625)) * ra + U(5.0 / 3.0)) * ra + U(-5.0)) * ra + U(4) + U(-2.0 / 3.0) / ra
     # (1/12)*(ra^5) - 0.5(ra^4) + 0.625(ra^3) + (5/3)(ra^2) - 5(ra) + 4 - (2/3) / ra
 end
 
-@inline function _gaspari_cohn_diff_large(ra)
-    @muladd (((((5.0 / 12.0) * ra + (-2.0)) * ra + 1.875) * ra + (10.0 / 3.0)) * ra + (-5.0) + (2.0 / 3.0) / (ra * ra))
+@inline function _gaspari_cohn_diff_large(ra::U)::U where {U}
+    @muladd ((((U(5.0 / 12.0) * ra + U(-2.0)) * ra + U(1.875)) * ra + U(10.0 / 3.0)) * ra + U(-5.0) + U(2.0 / 3.0) / (ra * ra))
     # (5/12)*(ra^4) - 2(ra^3) + 1.875(ra^2) + (10/3)ra -5  + (2/3) / (ra^2)
 end
 
-@inline function _gaspari_cohn_diff2_large(ra)
-    @muladd (((5.0 / 3.0) * ra + (-6.0)) * ra + 3.75) * ra + (10.0 / 3.0) + (-4.0 / 3.0) / (ra * ra * ra)
+@inline function _gaspari_cohn_diff2_large(ra::U)::U where {U}
+    @muladd ((U(5.0 / 3.0) * ra + U(-6.0)) * ra + U(3.75)) * ra + U(10.0 / 3.0) + U(-4.0 / 3.0) / (ra * ra * ra)
     # (5/3)*(ra^3) - 6(ra^2) + 3.75ra + 10/3 - (4/3) / (ra^3)
 end
 
-@inline function Evaluate(m::GaspariCohn, x)
+@inline function Evaluate(m::GaspariCohn{U}, x::U)::U where {U}
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -86,10 +91,10 @@ end
     elseif ra < 2
         return _gaspari_cohn_large(ra)
     end
-    0.0
+    zero(U)
 end
 
-@inline function EvalDiff(m::GaspariCohn, x)
+@inline function EvalDiff(m::GaspariCohn{U}, x::U)::Tuple{U, U} where {U}
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -97,10 +102,10 @@ end
     elseif ra < 2
         return _gaspari_cohn_large(ra), sign(x)*_gaspari_cohn_diff_large(ra)*m.input_scale
     end
-    0.0, 0.0
+    zero(U), zero(U)
 end
 
-@inline function EvalDiff2(m::GaspariCohn, x)
+@inline function EvalDiff2(m::GaspariCohn{U}, x::U)::Tuple{U, U, U} where {U}
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -108,7 +113,7 @@ end
     elseif ra < 2
         return _gaspari_cohn_large(ra), sign(x)*_gaspari_cohn_diff_large(ra)*m.input_scale, _gaspari_cohn_diff2_large(ra)*m.input_scale*m.input_scale
     end
-    0.0, 0.0, 0.0
+    zero(U), zero(U), zero(U)
 end
 
 struct ExponentialFilter{S<:Real}<: Mollifier
@@ -118,13 +123,16 @@ struct ExponentialFilter{S<:Real}<: Mollifier
     end
 end
 
-@inline Evaluate(m::ExponentialFilter, x) = Evaluate(m.gc, sqrt(x))
-@inline function EvalDiff(m::ExponentialFilter, x)
+@inline function Evaluate(m::ExponentialFilter{U}, x::U)::U where {U}
+    Evaluate(m.gc, sqrt(x))
+end
+
+@inline function EvalDiff(m::ExponentialFilter{U}, x::U)::Tuple{U,U} where {U}
     eval, diff = EvalDiff(m.gc, sqrt(x))
     eval, diff / (2 * sqrt(x))
 end
 
-@inline function EvalDiff2(m::ExponentialFilter, x)
+@inline function EvalDiff2(m::ExponentialFilter{U}, x::U)::Tuple{U,U,U} where {U}
     eval, diff, diff2 = EvalDiff2(m.gc, sqrt(x))
     eval, diff/(2 * sqrt(x)), diff2 / (4 * x) - diff / (4 * sqrt(x * x * x))
 end

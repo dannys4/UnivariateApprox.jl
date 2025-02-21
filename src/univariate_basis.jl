@@ -2,6 +2,7 @@ export Evaluate, Evaluate!
 export EvaluateDegree, EvaluateDegree!
 export EvalDiff, EvalDiff!
 export EvalDiff2, EvalDiff2!
+export ScaledBasis
 
 abstract type UnivariateBasis end
 
@@ -208,4 +209,33 @@ function EvalDiff2(max_degree::Int, basis::UnivariateBasis, x::AbstractVector{U}
     diff2_space = similar(x, (max_degree + 1, length(x)))
     EvalDiff2!(eval_space, diff_space, diff2_space, basis, x)
     eval_space, diff_space, diff2_space
+end
+
+struct ScaledBasis{B<:UnivariateBasis, V<:AbstractVector{<:Real}} <: UnivariateBasis
+    basis::B
+    scaling::V
+end
+
+function Evaluate!(space::AbstractMatrix{U}, basis::ScaledBasis, x::AbstractVector{U}) where {U}
+    @argcheck size(space, 1) <= length(basis.scaling) DimensionMismatch
+    Evaluate!(space, basis.basis, x)
+    scaling = @view basis.scaling[1:size(space, 1)]
+    @. space = space * scaling
+end
+
+function EvalDiff!(eval_space::AbstractMatrix{U}, diff_space::AbstractMatrix{U}, basis::ScaledBasis, x::AbstractVector{U}) where {U}
+    @argcheck size(eval_space, 1) <= length(basis.scaling) DimensionMismatch
+    EvalDiff!(eval_space, diff_space, basis.basis, x)
+    scaling = @view basis.scaling[1:size(eval_space, 1)]
+    @. eval_space = eval_space * scaling
+    @. diff_space = diff_space * scaling
+end
+
+function EvalDiff2!(eval_space::AbstractMatrix{U}, diff_space::AbstractMatrix{U}, diff2_space::AbstractMatrix{U}, basis::ScaledBasis, x::AbstractVector{U}) where {U}
+    @argcheck size(eval_space, 1) <= length(basis.scaling) DimensionMismatch
+    EvalDiff2!(eval_space, diff_space, diff2_space, basis.basis, x)
+    scaling = @view basis.scaling[1:size(eval_space, 1)]
+    @. eval_space = eval_space * scaling
+    @. diff_space = diff_space * scaling
+    @. diff2_space = diff2_space * scaling
 end
