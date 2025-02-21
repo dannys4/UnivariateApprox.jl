@@ -125,7 +125,7 @@ julia> Evaluate(2, LegendrePolynomial(), [0.5, 0.75])
 See also: [`Evaluate!`](@ref)
 """
 function Evaluate(max_degree::Int, basis::UnivariateBasis, x::AbstractVector{U}) where {U}
-    space = zeros(U, max_degree + 1, length(x))
+    space = similar(x, (max_degree + 1, length(x)))
     Evaluate!(space, basis, x)
     space
 end
@@ -136,7 +136,7 @@ end
 Evaluate the univariate basis `basis` of exactly `degree` at `x` and return the result.
 """
 function EvaluateDegree(degree::Int, basis::UnivariateBasis, x::AbstractVector{U}) where {U}
-    space = zeros(U, length(x))
+    space = similar(x)
     EvaluateDegree!(space, degree, basis, x)
     space
 end
@@ -166,8 +166,8 @@ julia> diff_space
 See also: [`EvalDiff!`](@ref)
 """
 function EvalDiff(max_degree::Int, basis::UnivariateBasis, x::AbstractVector{U}) where {U}
-    eval_space = zeros(U, max_degree + 1, length(x))
-    diff_space = zeros(U, max_degree + 1, length(x))
+    eval_space = similar(x, (max_degree + 1, length(x)))
+    diff_space = similar(x, (max_degree + 1, length(x)))
     EvalDiff!(eval_space, diff_space, basis, x)
     eval_space, diff_space
 end
@@ -203,9 +203,9 @@ julia> diff2_space
 See also: [`EvalDiff2!`](@ref)
 """
 function EvalDiff2(max_degree::Int, basis::UnivariateBasis, x::AbstractVector{U}) where {U}
-    eval_space = zeros(U, max_degree + 1, length(x))
-    diff_space = zeros(U, max_degree + 1, length(x))
-    diff2_space = zeros(U, max_degree + 1, length(x))
+    eval_space = similar(x, (max_degree + 1, length(x)))
+    diff_space = similar(x, (max_degree + 1, length(x)))
+    diff2_space = similar(x, (max_degree + 1, length(x)))
     EvalDiff2!(eval_space, diff_space, diff2_space, basis, x)
     eval_space, diff_space, diff2_space
 end

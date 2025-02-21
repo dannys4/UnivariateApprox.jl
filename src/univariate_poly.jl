@@ -33,15 +33,15 @@ struct OrthogonalPolynomial{Lk,Mk,Ak,Bk} <: Polynomial
     bk::Bk
 end
 
-_ProbHermiteAk = Returns(0)
+@inline _ProbHermiteAk( ::Int)::Int = 0
 @inline _ProbHermiteBk(k::Int)::Int = k
 
 # Probabilist Hermite polynomials `He_k`, orthogonal under `exp(-x^2/2)`
 ProbabilistHermitePolynomial() = MonicOrthogonalPolynomial(_ProbHermiteAk, _ProbHermiteBk)
 
-_PhysHermiteLk = Returns(1)
-_PhysHermiteMk = Returns(2)
-_PhysHermiteAk = Returns(0)
+@inline _PhysHermiteLk( ::Int)::Int = 1
+@inline _PhysHermiteMk( ::Int)::Int = 2
+@inline _PhysHermiteAk( ::Int)::Int = 0
 @inline _PhysHermiteBk(k::Int)::Int = 2k
 
 # Physicist Hermite polynomials `H_k`, orthogonal under `exp(-x^2)`

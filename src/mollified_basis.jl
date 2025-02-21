@@ -78,7 +78,7 @@ end
     # (5/3)*(ra^3) - 6(ra^2) + 3.75ra + 10/3 - (4/3) / (ra^3)
 end
 
-function Evaluate(m::GaspariCohn, x)
+@inline function Evaluate(m::GaspariCohn, x)
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -89,7 +89,7 @@ function Evaluate(m::GaspariCohn, x)
     0.0
 end
 
-function EvalDiff(m::GaspariCohn, x)
+@inline function EvalDiff(m::GaspariCohn, x)
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -100,7 +100,7 @@ function EvalDiff(m::GaspariCohn, x)
     0.0, 0.0
 end
 
-function EvalDiff2(m::GaspariCohn, x)
+@inline function EvalDiff2(m::GaspariCohn, x)
     x2 = x * m.input_scale
     ra = abs(x2)
     if ra < 1
@@ -118,47 +118,48 @@ struct ExponentialFilter{S<:Real}<: Mollifier
     end
 end
 
-Evaluate(m::ExponentialFilter, x) = Evaluate(m.gc, sqrt(x))
-function EvalDiff(m::ExponentialFilter, x)
+@inline Evaluate(m::ExponentialFilter, x) = Evaluate(m.gc, sqrt(x))
+@inline function EvalDiff(m::ExponentialFilter, x)
     eval, diff = EvalDiff(m.gc, sqrt(x))
     eval, diff / (2 * sqrt(x))
 end
 
-function EvalDiff2(m::ExponentialFilter, x)
+@inline function EvalDiff2(m::ExponentialFilter, x)
     eval, diff, diff2 = EvalDiff2(m.gc, sqrt(x))
     eval, diff/(2 * sqrt(x)), diff2 / (4 * x) - diff / (4 * sqrt(x * x * x))
 end
 
 function Evaluate!(space::AbstractMatrix{U}, basis::MollifiedBasis{Start},
-        x::AbstractVector{U}) where {Start, U}
-    Evaluate!(space, basis.basis, x)
-    @inbounds for i in axes(space, 2)
+        x::AbstractVector{U}; kwargs...) where {Start, U}
+    Evaluate!(space, basis.basis, x; kwargs...)
+    AK.foraxes(space, 2; kwargs...) do i; @inbounds begin
         moll_i = Evaluate(basis.moll, x[i])
         space[(Start + 1):end, i] .*= moll_i
-    end
+    end; end
 end
 
 function EvalDiff!(eval_space::AbstractMatrix{U}, diff_space::AbstractMatrix{U},
-        basis::MollifiedBasis{Start}, x::AbstractVector{U}) where {Start, U}
-    EvalDiff!(eval_space, diff_space, basis.basis, x)
-    @inbounds for i in axes(eval_space, 2)
+        basis::MollifiedBasis{Start}, x::AbstractVector{U}; kwargs...) where {Start, U}
+    EvalDiff!(eval_space, diff_space, basis.basis, x; kwargs...)
+    AK.foraxes(eval_space, 2; kwargs...) do i; @inbounds begin
         eval_i, diff_i = EvalDiff(basis.moll, x[i])
         @simd for j in Start+1:size(eval_space, 1)
             diff_space[j, i] = diff_space[j, i] * eval_i + eval_space[j, i] * diff_i
             eval_space[j, i] *= eval_i
         end
-    end
+    end; end
 end
 
 function EvalDiff2!(eval_space::AbstractMatrix{U}, diff_space::AbstractMatrix{U},
-        diff2_space::AbstractMatrix{U}, basis::MollifiedBasis{Start}, x::AbstractVector{U}) where {Start, U}
-    EvalDiff2!(eval_space, diff_space, diff2_space, basis.basis, x)
-    @inbounds for i in axes(eval_space, 2)
+        diff2_space::AbstractMatrix{U}, basis::MollifiedBasis{Start}, x::AbstractVector{U};
+        kwargs...) where {Start, U}
+    EvalDiff2!(eval_space, diff_space, diff2_space, basis.basis, x; kwargs...)
+    AK.foraxes(eval_space, 2; kwargs...) do i; @inbounds begin
         eval_i, diff_i, diff2_i = EvalDiff2(basis.moll, x[i])
         @simd for j in Start+1:size(eval_space, 1)
             @muladd diff2_space[j, i] = diff2_space[j, i] * eval_i + 2 * diff_space[j, i] * diff_i + eval_space[j, i] * diff2_i
             @muladd diff_space[j, i] = diff_space[j, i] * eval_i + eval_space[j, i] * diff_i
             eval_space[j, i] *= eval_i
         end
-    end
+    end; end
 end
