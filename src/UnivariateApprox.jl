@@ -1,5 +1,6 @@
 module UnivariateApprox
-using MuladdMacro, LinearAlgebra, Serialization, FFTW
+using MuladdMacro, LinearAlgebra, Serialization, FFTW, ArgCheck
+import AcceleratedKernels as AK
 
 # Quadrature rules
 include("univariate_quadrature.jl")
