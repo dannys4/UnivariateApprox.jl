@@ -5,9 +5,9 @@ basis = JacobiPolynomial(0.5, 0.75)
 import UnivariateApprox: Evaluate, EvalDiff, EvalDiff2
 # Mollification m(x) = x
 struct NoMollification <: UnivariateApprox.Mollifier end
-UnivariateApprox.Evaluate(::NoMollification, x) = one(x)
-UnivariateApprox.EvalDiff(::NoMollification, x) = (one(x), zero(x))
-UnivariateApprox.EvalDiff2(::NoMollification, x) = (one(x), zero(x), zero(x))
+@inline UnivariateApprox.Evaluate(::NoMollification, x) = one(x)
+@inline UnivariateApprox.EvalDiff(::NoMollification, x) = (one(x), zero(x))
+@inline UnivariateApprox.EvalDiff2(::NoMollification, x) = (one(x), zero(x), zero(x))
 
 basis = JacobiPolynomial(0.75, 0.52)
 
