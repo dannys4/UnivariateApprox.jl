@@ -1,6 +1,7 @@
 p, N_pts = 6, 100
 rng = Xoshiro(284028)
-pts = 2rand(rng, N_pts) .- 1
+pts_01 = rand(rng, N_pts)
+pts = 2pts_01 .- 1
 
 @testset "Polynomial Evaluation" begin
     @testset "Monomial Eval" begin
@@ -28,13 +29,17 @@ pts = 2rand(rng, N_pts) .- 1
         legendre_lead_coeffs = [1, 1, 3 / 2, 5 / 2, 35 / 8, 63 / 8, 231 / 16]
         legendre_poly = LegendrePolynomial()
         monic_legendre_poly = MonicLegendrePolynomial()
+        shifted_legendre_poly = ShiftedLegendrePolynomial()
         space = zeros(p + 1, N_pts)
         monic_space = zeros(p + 1, N_pts)
+        shifted_space = zeros(p + 1, N_pts)
         Evaluate!(space, legendre_poly, pts, max_tasks=1)
         Evaluate!(monic_space, monic_legendre_poly, pts, max_tasks=1)
+        Evaluate!(shifted_space, shifted_legendre_poly, pts_01, max_tasks=1)
         for k in eachindex(exact_legendre_polys)
             @test isapprox(space[k, :], exact_legendre_polys[k].(pts), rtol=1e-12)
             @test isapprox(monic_space[k, :], exact_legendre_polys[k].(pts) / legendre_lead_coeffs[k], rtol=1e-12)
+            @test isapprox(shifted_space[k, :], exact_legendre_polys[k].(pts), rtol=1e-12)
         end
         final_degree = EvaluateDegree(p, legendre_poly, pts)
         @test isapprox(final_degree, space[end, :], atol=1e-12)
@@ -121,7 +126,7 @@ end
 
 @testset "Polynomial Derivatives" begin
     @testset "Monomials" begin
-        monomials = MonicOrthogonalPolynomial(Returns(0.0), Returns(0.0))
+        monomials = Monomials()
         ref_eval_space = zeros(p + 1, N_pts)
         Evaluate!(ref_eval_space, monomials, pts, max_tasks=1)
         eval_space = zeros(p + 1, N_pts)
@@ -189,7 +194,7 @@ end
 
 @testset "Polynomial Second Derivatives" begin
     @testset "Monomials" begin
-        monomials = MonicOrthogonalPolynomial(Returns(0.0), Returns(0.0))
+        monomials = Monomials()
         ref_eval_space = zeros(p + 1, N_pts)
         Evaluate!(ref_eval_space, monomials, pts, max_tasks=1)
         eval_space = zeros(p + 1, N_pts)
