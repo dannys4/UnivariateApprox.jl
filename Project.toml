@@ -1,7 +1,7 @@
 name = "UnivariateApprox"
 uuid = "549aa1d2-f639-4cc7-b8e4-a7f233081321"
 authors = ["Daniel Sharp <dannys4@mit.edu> and contributors"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 AcceleratedKernels = "6a4ca0a5-0e36-4168-a932-d9be78d558f1"
