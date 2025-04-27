@@ -47,6 +47,12 @@ end
 # Probabilist Hermite polynomials `He_k`, orthogonal under `exp(-x^2/2)`
 ProbabilistHermitePolynomial() = MonicOrthogonalPolynomial(_ProbHermiteAk, _ProbHermiteBk)
 
+@inline _NormProbHermiteLk(k::Int) = sqrt(k+1)
+@inline _NormProbHermiteMk = Returns(true)
+@inline _NormProbHermiteAk = Returns(false)
+@inline _NormProbHermiteBk(k::Int) = sqrt(k)
+NormalizedProbabilistHermitePolynomial() = OrthogonalPolynomial(_NormProbHermiteLk, _NormProbHermiteMk, _NormProbHermiteAk, _NormProbHermiteBk)
+
 @inline _PhysHermiteLk = Returns(true)
 @inline _PhysHermiteMk = Returns(2)
 @inline _PhysHermiteAk = Returns(false)
