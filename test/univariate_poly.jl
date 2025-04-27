@@ -81,11 +81,17 @@ pts = 2pts_01 .- 1
             x -> x^4 - 6x^2 + 3,
             x -> x^5 - 10x^3 + 15x
         ]
+        exact_prob_hermite_polys_norms = [sqrt(factorial(j)) for j in 0:p]
         prob_hermite_poly = ProbabilistHermitePolynomial()
+        norm_prob_hermite_poly = NormalizedProbabilistHermitePolynomial()
         space = zeros(p + 1, N_pts)
+        norm_space = zeros(p + 1, N_pts)
         Evaluate!(space, prob_hermite_poly, pts, max_tasks=1)
+        Evaluate!(norm_space, norm_prob_hermite_poly, pts, max_tasks=1)
         for k in eachindex(exact_prob_hermite_polys)
             @test isapprox(space[k, :], exact_prob_hermite_polys[k].(pts), rtol=1e-12)
+            norm_k = exact_prob_hermite_polys_norms[k]
+            @test isapprox(norm_space[k, :], exact_prob_hermite_polys[k].(pts)/norm_k, rtol=1e-12)
         end
     end
 
