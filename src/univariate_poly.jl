@@ -1,5 +1,6 @@
 export LegendrePolynomial, MonicLegendrePolynomial,
-    ProbabilistHermitePolynomial, PhysicistHermitePolynomial,
+    ProbabilistHermitePolynomial, NormalizedProbabilistHermitePolynomial,
+    PhysicistHermitePolynomial,
     JacobiPolynomial, MonicJacobiPolynomial,
     LaguerrePolynomial, ShiftedLegendrePolynomial
 
