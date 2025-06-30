@@ -9,5 +9,6 @@ include("univariate_quadrature.jl")
 include("univariate_basis.jl")
 include("univariate_poly.jl")
 include("mollified_basis.jl")
+include("scaled_bases.jl")
 
 end
